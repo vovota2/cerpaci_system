@@ -748,7 +748,7 @@ with col_vitez:
     uspora = r1['Total'] - r2['Total']
     st.success(f"💰 **Ekonomické doporučení: Volba Řešení 2** (Úspora **{uspora:,.0f} Kč** ročně)".replace(","," "))
     st.write("**Proč se vyplatí investovat do širšího potrubí?**")
-    st.write("Tlakové ztráty v potrubí klesají s pátou mocninou průměru: vlivem rychlosti - z rovnice kontinuity je ve jmenovateli D na čtvrtou + vlivem délkového třecího součinitele - D na prvou ve jmenovateli. Čerpadlo tak u Řešení 2 nemusí překonávat takový hydraulický odpor sítě, díky čemuž spotřebuje o desítky kW méně elektřiny. Tato provozní úspora na energiích zaplatí zvýšenou počáteční investici do větších trubek už během prvního roku provozu.")
+    st.write("Tlakové ztráty v potrubí klesají s pátou mocninou průměru: vlivem rychlosti - z rovnice kontinuity je ve jmenovateli D na druhou plus se rychlost ve ztrátách umocňuje na druhou, tedy celkově D na čtvrtou + vlivem délkového třecího součinitele - D na prvou ve jmenovateli. Čerpadlo tak u Řešení 2 nemusí překonávat takový hydraulický odpor sítě, díky čemuž spotřebuje o desítky kW méně elektřiny. Tato provozní úspora na energiích zaplatí zvýšenou počáteční investici do větších trubek už během prvního roku provozu.")
 
 with col_rizika:
     st.warning("⚠️ **Možná rizika a negativa:**")
