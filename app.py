@@ -640,9 +640,9 @@ if poly_Y_active is not None and Q_op_m3_s is not None:
         else:
             st.write("Nebyl nalezen vhodný motor.")
 
-    # -----------------------------------------------------------------------------------
+    # ---------------------------------
     # EKONOMICKÁ ČÁST
-    # -----------------------------------------------------------------------------------
+    
     st.markdown("### 💰 Ekonomická bilance")
 
     cena_el_kwh = 8500 / 1000  # 8 500 Kč/MWh -> 8.5 Kč/kWh
@@ -682,7 +682,82 @@ if poly_Y_active is not None and Q_op_m3_s is not None:
     c_eko3.metric("Celkové roční náklady", f"{celkove_naklady_rok:,.0f} Kč".replace(",", " "))
     
     st.success(f"**Výsledná měrná cena za čerpání vody:** {merna_cena_m3:.3f} Kč / m³")
-    # -----------------------------------------------------------------------------------
+    # ------------------------
+
+
+# SROVNÁVACÍ ANALÝZAA PRO INVESTORA
+# -----------------------
+st.markdown("---")
+st.markdown("### 📈 Srovnávací analýza obou řešení pro investora")
+
+
+hmotnosti_kg_m = {200: 35, 250: 45, 300: 58, 350: 72, 400: 88, 500: 125}
+
+def spocti_variantu_pro_srovnani(Ds_mm_loc, Dv_mm_loc, poly_Y_loc, poly_P_loc, f_NPSH_loc):
+    Ds_loc, Dv_loc = Ds_mm_loc / 1000.0, Dv_mm_loc / 1000.0
+    
+    def sys_Y_loc(q):
+        if q <= 0: return H_g * g
+        v_s_loc = (4 * q) / (np.pi * Ds_loc**2)
+        Re_s_loc = (v_s_loc * Ds_loc) / ny
+        lam_s_loc = 0.25 / (np.log10((k_m / (3.7 * Ds_loc)) + (5.74 / (Re_s_loc**0.9))))**2
+        h_zs_loc = (lam_s_loc * (L_s / Ds_loc) + zeta_kos + mapa_zeta_90[Ds_mm_loc]) * (v_s_loc**2 / (2 * g))
+        
+        v_v_loc = (4 * q) / (np.pi * Dv_loc**2)
+        Re_v_loc = (v_v_loc * Dv_loc) / ny
+        lam_v_loc = 0.25 / (np.log10((k_m / (3.7 * Dv_loc)) + (5.74 / (Re_v_loc**0.9))))**2
+        sz_v_loc = zeta_ventil + zeta_vytok + (pocet_90 * mapa_zeta_90[Dv_mm_loc]) + (pocet_45 * mapa_zeta_90[Dv_mm_loc] * 0.60) + (pocet_30 * mapa_zeta_90[Dv_mm_loc] * 0.45)
+        h_zv_loc = (lam_v_loc * (L_v / Dv_loc) + sz_v_loc) * (v_v_loc**2 / (2 * g))
+        return (H_g + h_zs_loc + h_zv_loc) * g
+
+    # Nalezení prac.. bodu
+    Q_op_loc = fsolve(lambda q: sys_Y_loc(q) - poly_Y_loc(q), Q_target_m3_s)[0]
+    Y_op_loc = sys_Y_loc(Q_op_loc)
+    P_op_loc = poly_P_loc(Q_op_loc)
+    t_real_loc = Q_den_m3 / (Q_op_loc * 3600)
+    
+    # Kavitace
+    v_s_loc = (4 * Q_op_loc) / (np.pi * Ds_loc**2)
+    Re_s_loc = (v_s_loc * Ds_loc) / ny
+    lam_s_loc = 0.25 / (np.log10((k_m / (3.7 * Ds_loc)) + (5.74 / (Re_s_loc**0.9))))**2
+    ztrata_sani_loc = (lam_s_loc * (L_s / Ds_loc) + zeta_kos + mapa_zeta_90[Ds_mm_loc]) * (v_s_loc**2 / (2 * g))
+    npsha_loc = 10.1 - h_saci_vyska - ztrata_sani_loc
+    
+    # Ekonomika
+    inv_potrubi = (L_s * hmotnosti_kg_m.get(Ds_mm_loc, 0) + L_v * hmotnosti_kg_m.get(Dv_mm_loc, 0)) * 65
+    ene_rok = (P_op_loc / 0.95) * t_real_loc * 365 * 8.5
+    total_rok = (inv_potrubi * 0.10) + ene_rok 
+    merna = total_rok / (Q_den_m3 * 365)
+    
+    return {"Q": Q_op_loc*3600, "H": Y_op_loc/g, "P": P_op_loc, "Total": total_rok, "Merna": merna, "NPSHa": npsha_loc, "NPSHr": f_NPSH_loc(Q_op_loc)}
+
+
+r1 = spocti_variantu_pro_srovnani(350, 300, poly_Y_pump_R1, poly_P_R1, f_NPSH_R1)
+r2 = spocti_variantu_pro_srovnani(400, 350, poly_Y_pump_R2, poly_P_R2, f_NPSH_R2)
+
+df_komparace = pd.DataFrame({
+    "Hodnocený parametr": ["Dimenze potrubí (Sání / Výtlak)", "Pracovní průtok", "Dopravní výška", "Příkon čerpadla", "Roční náklady (bez ceny motoru)", "Měrná cena čerpání", "Kavitační rezerva (NPSHa - NPSHr)"],
+    "Řešení 1 (Užší)": [f"DN 350 / 300", f"{r1['Q']:.1f} m³/h", f"{r1['H']:.1f} m", f"{r1['P']:.1f} kW", f"{r1['Total']:,.0f} Kč".replace(","," "), f"{r1['Merna']:.3f} Kč/m³", f"{r1['NPSHa']-r1['NPSHr']:.2f} m"],
+    "Řešení 2 (Širší)": [f"DN 400 / 350", f"{r2['Q']:.1f} m³/h", f"{r2['H']:.1f} m", f"{r2['P']:.1f} kW", f"{r2['Total']:,.0f} Kč".replace(","," "), f"{r2['Merna']:.3f} Kč/m³", f"{r2['NPSHa']-r2['NPSHr']:.2f} m"]
+})
+
+st.table(df_komparace)
+
+col_vitez, col_rizika = st.columns(2)
+with col_vitez:
+    uspora = r1['Total'] - r2['Total']
+    st.success(f"💰 **Ekonomické doporučení: Volba Řešení 2** (Úspora **{uspora:,.0f} Kč** ročně)".replace(","," "))
+    st.write("**Proč se vyplatí investovat do širšího potrubí?**")
+    st.write("Tlakové ztráty v potrubí klesají s pátou mocninou průměru. Čerpadlo tak u Řešení 2 nemusí překonávat takový odpor sítě, díky čemuž spotřebuje o několik desítek kW méně elektřiny. Tato obrovská provozní úspora na energiích spolehlivě zaplatí zvýšenou počáteční investici do těžších trubek už během prvního roku provozu.")
+
+with col_rizika:
+    st.warning("⚠️ **Možná rizika a negativa (Trade-offs):**")
+    st.markdown("""
+    * **Manipulace a montáž:** Potrubí v Řešení 2 je o poznání těžší, což si vyžádá nasazení těžší techniky a prodraží prvotní instalaci.
+    * **Vyšší počáteční výdaj:** Jednorázový kapitálový výdaj při samotné stavbě systému bude znatelně vyšší.
+    * **Riziko sedimentace:** Ve větším potrubí teče voda pomaleji. Pokud by voda obsahovala hrubší kaly, může hrozit usazování (při zadaných průměrech jsme ale s rezervou v bezpečné zóně nad 1 m/s).
+    """)
+
 
 st.markdown("---")
 st.markdown("### 💡 Odůvodnění návrhu")
