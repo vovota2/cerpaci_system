@@ -751,7 +751,7 @@ with col_vitez:
     st.write("Tlakové ztráty v potrubí klesají s pátou mocninou průměru: vlivem rychlosti - z rovnice kontinuity je ve jmenovateli D na čtvrtou + vlivem délkového třecího součinitele - D na prvou ve jmenovateli. Čerpadlo tak u Řešení 2 nemusí překonávat takový hydraulický odpor sítě, díky čemuž spotřebuje o desítky kW méně elektřiny. Tato provozní úspora na energiích zaplatí zvýšenou počáteční investici do větších trubek už během prvního roku provozu.")
 
 with col_rizika:
-    st.warning("⚠️ **Možná rizika a negativa (Trade-offs):**")
+    st.warning("⚠️ **Možná rizika a negativa:**")
     st.markdown("""
     * **Manipulace a montáž:** Potrubí v Řešení 2 je těžší, což si vyžádá nasazení těžší techniky a bude znamenat složitější dopravu a montáž a tak prodraží prvotní instalaci.
     * **Vyšší počáteční výdaj:** Jednorázový výdaj při samotné stavbě systému bude vyšší.
