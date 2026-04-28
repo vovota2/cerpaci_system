@@ -748,13 +748,13 @@ with col_vitez:
     uspora = r1['Total'] - r2['Total']
     st.success(f"💰 **Ekonomické doporučení: Volba Řešení 2** (Úspora **{uspora:,.0f} Kč** ročně)".replace(","," "))
     st.write("**Proč se vyplatí investovat do širšího potrubí?**")
-    st.write("Tlakové ztráty v potrubí klesají s pátou mocninou průměru. Čerpadlo tak u Řešení 2 nemusí překonávat takový odpor sítě, díky čemuž spotřebuje o několik desítek kW méně elektřiny. Tato obrovská provozní úspora na energiích spolehlivě zaplatí zvýšenou počáteční investici do těžších trubek už během prvního roku provozu.")
+    st.write("Tlakové ztráty v potrubí klesají s pátou mocninou průměru (vlivem rychlosti (z rovnice kontinuity je ve jmenovateli D na čtvrtou) + vlivem délkového třecího součinitele (D na prvou ve jmenovateli). Čerpadlo tak u Řešení 2 nemusí překonávat takový odpor sítě, díky čemuž spotřebuje o desítky kW méně elektřiny. Tato provozní úspora na energiích zaplatí zvýšenou počáteční investici do větších trubek už během prvního roku provozu.")
 
 with col_rizika:
     st.warning("⚠️ **Možná rizika a negativa (Trade-offs):**")
     st.markdown("""
-    * **Manipulace a montáž:** Potrubí v Řešení 2 je o poznání těžší, což si vyžádá nasazení těžší techniky a prodraží prvotní instalaci.
-    * **Vyšší počáteční výdaj:** Jednorázový kapitálový výdaj při samotné stavbě systému bude znatelně vyšší.
+    * **Manipulace a montáž:** Potrubí v Řešení 2 je těžší, což si vyžádá nasazení těžší techniky a bude znamenat složitější dopravu a montáž a tak prodraží prvotní instalaci.
+    * **Vyšší počáteční výdaj:** Jednorázový výdaj při samotné stavbě systému bude vyšší.
     * **Riziko sedimentace:** Ve větším potrubí teče voda pomaleji. Pokud by voda obsahovala hrubší kaly, může hrozit usazování (při zadaných průměrech jsme ale s rezervou v bezpečné zóně nad 1 m/s).
     """)
 
